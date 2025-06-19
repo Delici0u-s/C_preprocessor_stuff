@@ -1,12 +1,12 @@
 #include <stdio.h>
-#include <concat.h>
-#include <common.h>
+// #include <incl_macros.h>
+#include <generic_table.h>
+
+#define bla2(inp) puts(STR(inp))
 
 int main(void) {
-  // CONCAT(a, b, c)(a, b, c);
-  // puts(STR(VAR_COUNT(1)));
-  puts(STR(CONCAT(1, 2, 3, 4, 5, 6, 7)));
-  puts(STR(done));
+  // FOR_EACH(bla2, CONCAT(1, 2, 3), CONCAT(), CONCAT(1), CONCAT(1, 2), done);
+  foo();
 
   return 0;
 }
