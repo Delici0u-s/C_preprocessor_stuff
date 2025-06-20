@@ -5,9 +5,13 @@
 #include "concat.h"
 
 // cond as 1 for true, 0 for false
-#define IF_ELSE(cond, _true, _false) CONCAT(_IF_, EXPAND(cond))(_true, _false)
+#define IF_ELSE(cond, _true, _false) CONCAT(_IF_, cond)(_true, _false)
 
-#define _IF_1(true_branch, false_branch) true_branch
-#define _IF_0(true_branch, false_branch) false_branch
+#define _IF_1(_true, _false) _true
+#define _IF_0(_true, _false) _false
+
+#define kek(a, b)                                                                                                      \
+  #if typeof(a) == typeof(b) 1 #else\
+0 #endif
 
 #endif

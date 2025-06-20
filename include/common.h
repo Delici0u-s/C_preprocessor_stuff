@@ -16,6 +16,8 @@
 
 #define EXPAND(x) x
 #define PARENTISIZE(x) (x)
+#define STRIP_PARENS(x) _STRIP_PARENS_ x
+#define _STRIP_PARENS_(...) __VA_ARGS__
 #define CALL_BRACE(f, x) f x
 
 #define _CONCAT_(a, b) a##b
