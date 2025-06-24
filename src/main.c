@@ -6,7 +6,7 @@
 
 int main(void) {
   // FOR_EACH(bla2, CONCAT(1, 2, 3), CONCAT(), CONCAT(1), CONCAT(1, 2), done);
-  kek();
+  gen_test();
 
   return 0;
 }
