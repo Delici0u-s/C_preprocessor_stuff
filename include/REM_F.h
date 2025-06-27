@@ -4,7 +4,7 @@
 #include "common.h"
 #include "var_count.h"
 
-#define REMF(...) _CONCAT(_REMF_, VAR_COUNT(__VA_ARGS__))(__VA_ARGS__)
+#define REM_F(...) _CONCAT(_REMF_, VAR_COUNT(__VA_ARGS__))(__VA_ARGS__)
 
 // clang-format off
 #define _REMF_0()

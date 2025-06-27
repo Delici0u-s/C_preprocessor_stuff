@@ -47,4 +47,6 @@ char seventh(char a, char b) {
 #define D_INTERNAL_NAME_2(x, y)                                                                                        \
   _Generic((x), int: _Generic((y), int: fifth, char: sixt), char: _Generic((y), char: seventh))(x, y)
 
+#define test(...) D_INTERNAL_NAME(...) _Generic((GET_ARG(1, __VA_ARGS__)), int: _Generic((GET_ARG(2, __VA_ARGS__), int: fifth, char: sixt, default: second), int*: third, char: _Generic((GET_ARG(2, __VA_ARGS__)), char: seventh), char*: fourth, default: first)(__VA_ARGS__)
+
 #define NAME(...) CONCAT(D_INTERNAL_NAME_, VAR_COUNT(__VA_ARGS__))(__VA_ARGS__)
