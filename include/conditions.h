@@ -10,8 +10,4 @@
 #define _IF_1(_true, _false) _true
 #define _IF_0(_true, _false) _false
 
-#define kek(a, b)                                                                                                      \
-  #if typeof(a) == typeof(b) 1 #else\
-0 #endif
-
 #endif

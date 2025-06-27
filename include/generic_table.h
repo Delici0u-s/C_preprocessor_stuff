@@ -105,24 +105,10 @@ CREATE_FUNC(void, foo4) { printf("foo4: %c, %c\n", x, y); }
 
 // #define joined(a0) GENERATE_VAR_LIST_1(a0, foo1, foo2, foo3, foo4)
 
-#define TYPE_EQUALS(t1, t2) __builtin_types_compatible_p(t1, t2)
-
 // TODO: IMPLEMENT TYPE BREAK MAKERS, like to tell when which function input type changes
 // Usage:
 void foo() { //
-  // TYPE_EQUALS(int, int) => 1
-  // So EXAMPLE(int, int) expands to 142
-  int x = EXAMPLE(int, int);
-
-  // TYPE_EQUALS(int, float) => 0
-  // So EXAMPLE(int, float) expands to 042 (which is octal 34)
-  int y = EXAMPLE(int, float);
-
-  // EXPAND(FN_GEN_LIST_ON_NAMES(foo1, foo2, foo3, foo4))
-
-  int x = 1;
-  int y = 2;
-  joined(x, y);
+  puts("Hi");
 }
 
 #endif /* GENERIC_TABLE_H */
