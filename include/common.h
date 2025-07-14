@@ -14,16 +14,22 @@
 #define STRINGIFY(x) #x
 #define STR(x) STRINGIFY(x)
 
-#define EXPAND(x) x
-#define PARENTISIZE(x) (x)
+#define EXPAND(...) __VA_ARGS__
+#define PARENTISIZE(...) (__VA_ARGS__)
 #define STRIP_PARENS(x) _STRIP_PARENS_ x
 #define _STRIP_PARENS_(...) __VA_ARGS__
 #define CALL_BRACE(f, x) f x
+#define VOID(...)
+#define AP_COMMA(...) __VA_ARGS__,
 
 #define _CONCAT_(a, b) a##b
 #define _CONCAT(a, b) _CONCAT_(a, b)
 
 #define GET_TYPE(x) __typeof__(x)
 #define GET_TYPE_(x) __typeof__ x
+
+#define SWAP(arg1, arg2) arg2, arg1
+#define SWAP_(packet) SWAP packet
+#define _SWAP_(packet) (SWAP packet)
 
 #endif

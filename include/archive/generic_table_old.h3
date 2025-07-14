@@ -1,0 +1,177 @@
+#ifndef MACRO_GENERIC_TABLE_H
+#define MACRO_GENERIC_TABLE_H
+
+#include "stdio.h"
+
+#include <common.h>
+#include <other/typeID.h>
+#include <list/list.h>
+#include <list/RECCALL.h>
+#include <args/get_arg.h>
+#include <args/REM_F.h>
+#include <args/REM_L.h>
+#include <args/var_count.h>
+#include <math/num_cmp.h>
+#include <math/logic.h>
+#include <args/append_arg.h>
+#include <math/add1.h>
+#include <math/sub1.h>
+#include <args/has_n_args.h>
+
+#define FUNCTION_PARAM_SUFFIX
+#define FUNCTION_PARAM_PREFIX types_
+#define FUNC_TO_TYPES(name) _CONCAT(FUNCTION_PARAM_PREFIX, _CONCAT(name, FUNCTION_PARAM_SUFFIX))
+
+#define P(typeID, name) (typeID, name) // Function Parameter argument
+#define SET_PARAMETERS(...) (__VA_ARGS__)
+
+#define CREATE_FUNC(_ret_type, _name) _ret_type _name(MAP(PARAM_EXTRACT, STRIP_PARENS(FUNC_TO_TYPES(_name))))
+
+#define PARAM_EXTRACT_(param) GET_ARG(1, STRIP_PARENS(GET_ARG(0, param))) GET_ARG(1, param)
+#define PARAM_EXTRACT(param) PARAM_EXTRACT_(STRIP_PARENS(param)) // (TYPEID, varname) == ((0, int), x) -> int x
+#define PARAM_EXTRACT_ID(param) GET_ARG(0, STRIP_PARENS(param))
+
+#define _FN_CREATE(...) _CONCAT(_LF_, VAR_COUNT(__VA_ARGS__))(S_COMMA, PARAM_EXTRACT_ID, __VA_ARGS__)
+#define _FN_CREATE_0(name) (_FN_CREATE(STRIP_PARENS(FUNC_TO_TYPES(name))), name)
+#define _FN_CREATE_1(name) (name)
+#define FN_CREATE(name) _CONCAT(_FN_CREATE_, IS_EMPTY(STRIP_PARENS(FUNC_TO_TYPES(name))))(name)
+// Fn structure: (ID1, ID2, ID3, IDn, function_name)
+// Fn structure: (ID1, ID2, ID3, IDn, function_name)
+// #define _FN_CREATE(...) _CONCAT(_LISTF_, VAR_COUNT(__VA_ARGS__))(COMMA(), PARAM_EXTRACT_ID, __VA_ARGS__)
+// #define FN_CREATE(func_name) \
+//   NIF_ELSE(SAME_NUM(VAR_COUNT(_FN_CREATE(STRIP_PARENS(_CONCAT(func_name, FUNCTION_PARAM_SUFFIX)))), 0), \
+//            (_FN_CREATE(STRIP_PARENS(_CONCAT(func_name, FUNCTION_PARAM_SUFFIX))), func_name), (func_name))
+
+#define FN_REDUCE(fn) (REM_F(STRIP_PARENS(fn)))
+#define FN_GET_LAST_TYPE(fn) GET_ARG(1, STRIP_PARENS(GET_ARG(0, STRIP_PARENS(fn))))
+#define FN_GET_LAST_TYPE_NUM(fn) GET_ARG(0, STRIP_PARENS(GET_ARG(0, STRIP_PARENS(fn))))
+#define FN_GET_LAST_TYPE_ID(fn) GET_ARG(0, STRIP_PARENS(fn))
+#define FN_CREATE_LIST(...) _CONCAT(_LF_, VAR_COUNT(__VA_ARGS__))(S_COMMA, FN_CREATE, __VA_ARGS__)
+
+// VAR_COUNT(__VA_ARGS__))(S_COMMA(), FN_CREATE, __VA_ARGS__)
+#define FN_GET_TYPE_COUNT(fn) SUB1(VAR_COUNT fn)
+
+// #define FN_TO_GEN_CALL(fn, next) FN_GET_LAST_TYPE(fn) : next
+#define FN_TO_GEN_CALL(fn, next) GET_ARG(1, STRIP_PARENS(GET_ARG(0, fn))) : next
+#define FN_END_TO_GEN_CALL(fn) FN_GET_LAST_TYPE(fn) : STRIP_PARENS(FN_REDUCE(fn))
+
+#define FN_AP_COMMA(fn) (fn S_COMMA())
+#define _FN_RET_IF_CORRECT_ARGS_(num, fn) IF(SAME_NUM(num, FN_GET_TYPE_COUNT(fn)), FN_AP_COMMA(fn))
+#define _FN_RET_IF_CORRECT_ARGS(brack) MAP(STRIP_PARENS, _FN_RET_IF_CORRECT_ARGS_ brack)
+#define FN_SELECT_ON_ARG_COUNT(num, ...) REM_L(LISTF(S_NONE, _FN_RET_IF_CORRECT_ARGS, AP_ARG(num, __VA_ARGS__)))
+// #define FN_KEEP_LIST(fn1, ...) MAP(_cond_keep_FN_SAME_TYPE, AP_ARG(fn1, __VA_ARGS__))
+#define FN_GET_LIST_N_ARGS(num, funcs) FN_SELECT_ON_ARG_COUNT(num, FN_CREATE_LIST(STRIP_PARENS(funcs)))
+// #define FN_SAME_TYPE(fn1, fn2) IF_ELSE(SAME_NUM(FN_GET_LAST_TYPE_ID(fn1), FN_GET_LAST_TYPE_ID(fn2)), true, false)
+#define FN_SAME_TYPE(fn1, fn2) SAME_NUM(FN_GET_LAST_TYPE_NUM(fn1), FN_GET_LAST_TYPE_NUM(fn2))
+#define _FN_SAME_ARG_COND_(fn1, fn2) IF(FN_SAME_TYPE(fn1, fn2), FN_AP_COMMA(fn2))
+#define _FN_SAME_ARG_COND(fn_comb) MAP(STRIP_PARENS, _FN_SAME_ARG_COND_ fn_comb)
+#define FN_SELECT_FN_ON_FN_TYPE(fn, ...) REM_L(LISTF(S_NONE, _FN_SAME_ARG_COND, AP_ARG(fn, __VA_ARGS__)))
+
+#define _FN_SAME_ARG_COND_N(fn1, fn2) NIF(FN_SAME_TYPE(fn1, fn2), FN_AP_COMMA(fn2))
+#define _FN_SAME_ARG_CONDN(fn_comb) MAP(STRIP_PARENS, _FN_SAME_ARG_COND_N fn_comb)
+#define FN_REMOVE_FN_ON_FN_TYPE(fn, ...) REM_L(LISTF(S_NONE, _FN_SAME_ARG_CONDN, AP_ARG(fn, __VA_ARGS__)))
+
+// __VA_ARGS__ should be GENERIC_CALLS
+#define _GENERATE_VAR_LIST_n(a0, ...) _Generic((a0), __VA_ARGS__)
+
+#define GENERATE_GENERIC_0(fns, args) STRIP_PARENS fns()
+
+#define GENERATE_GENERIC_1(fns, args)                                                                                  \
+  _GENERATE_VAR_LIST_n(STRIP_PARENS(args), MAP(FN_END_TO_GEN_CALL, STRIP_PARENS(fns)))(STRIP_PARENS(args))
+
+// magic function
+#define JOIN_FUNCS(funcs, ...)                                                                                         \
+  CONCAT(GENERATE_GENERIC_, VAR_COUNT(__VA_ARGS__))((FN_GET_LIST_N_ARGS(VAR_COUNT(__VA_ARGS__), funcs)), (__VA_ARGS__))
+
+//////////////////////////////////////////////////////////////
+#define PRINT_STRING(str) printf(" %s", str)
+#define PRINT_FUNC(func)                                                                                               \
+  FOR_EACH(PRINT_STRING, __PRETTY_FUNCTION__, ":",                                                                     \
+           MAP(STRINGIFY, MAP(FN_GET_LAST_TYPE, STRIP_PARENS(FUNC_TO_TYPES(func)))), "\n")
+
+#define CREATE_FUNC_TEST(_ret_type, _name)                                                                             \
+  _ret_type _name(MAP(PARAM_EXTRACT, STRIP_PARENS(FUNC_TO_TYPES(_name)))) { PRINT_FUNC(_name); }
+
+#define types_f_no_param SET_PARAMETERS()
+CREATE_FUNC(void, f_no_param) { puts(" f_no_param"); }
+
+#define types_foo SET_PARAMETERS(P(ID_int_p, x))
+CREATE_FUNC_TEST(void, foo)
+
+#define types_foo1 SET_PARAMETERS(P(ID_int, x))
+CREATE_FUNC_TEST(void, foo1)
+
+#define types_foo2 SET_PARAMETERS(P(ID_float_p, x))
+CREATE_FUNC_TEST(void, foo2)
+
+#define types_foo3 SET_PARAMETERS(P(ID_char_p, x))
+CREATE_FUNC_TEST(void, foo3)
+
+#define types_bar1 SET_PARAMETERS(P(ID_int, x), P(ID_float_p, f))
+CREATE_FUNC_TEST(float, bar1)
+
+#define types_bar2 SET_PARAMETERS(P(ID_int, x), P(ID_int, f))
+CREATE_FUNC_TEST(float, bar2)
+
+#define types_bar3 SET_PARAMETERS(P(ID_int, x), P(ID_char_p, f))
+CREATE_FUNC_TEST(float, bar3)
+
+#define types_bar4 SET_PARAMETERS(P(ID_float, x), P(ID_float_p, f))
+CREATE_FUNC_TEST(float, bar4)
+
+#define types_bar5 SET_PARAMETERS(P(ID_float, x), P(ID_int, f))
+CREATE_FUNC_TEST(float, bar5)
+
+#define types_bar6 SET_PARAMETERS(P(ID_float, x), P(ID_char_p, f))
+CREATE_FUNC_TEST(float, bar6)
+
+#define types_baz SET_PARAMETERS(P(ID_int, x), P(ID_float_p, f), P(ID_float, k))
+CREATE_FUNC_TEST(float, baz)
+
+#define types_limt1 SET_PARAMETERS(P(ID_int, x))
+CREATE_FUNC_TEST(float, limt1)
+
+#define types_limt2 SET_PARAMETERS(P(ID_int, x), P(ID_int, x1))
+CREATE_FUNC_TEST(float, limt2)
+
+#define types_limt3 SET_PARAMETERS(P(ID_int, x), P(ID_int, x1), P(ID_int, x2))
+CREATE_FUNC_TEST(float, limt3)
+
+#define types_limt4 SET_PARAMETERS(P(ID_int, x), P(ID_int, x1), P(ID_int, x2), P(ID_int, x3))
+CREATE_FUNC_TEST(float, limt4)
+
+#define types_limt5 SET_PARAMETERS(P(ID_int, x), P(ID_int, x1), P(ID_int, x2), P(ID_int, x3), P(ID_int, x4))
+CREATE_FUNC_TEST(float, limt5)
+
+#define types_limt6                                                                                                    \
+  SET_PARAMETERS(P(ID_int, x), P(ID_int, x1), P(ID_int, x2), P(ID_int, x3), P(ID_int, x4), P(ID_int, x5))
+CREATE_FUNC_TEST(float, limt6)
+
+#define joined(...) JOIN_FUNCS((foo, foo1, foo2, bar, baz, foo3, f_no_param), __VA_ARGS__)
+
+// #define FN_SELECT_REDUCE(fn, ...) MAP(FN_REDUCE, FN_SELECT_FN_ON_FN_TYPE(fn, __VA_ARGS__))
+// #define GENERATE_GENERIC_2(fns, args) FN_SELECT_REDUCE(GET_ARG(0, STRIP_PARENS(fns)), STRIP_PARENS(fns))
+
+#define _FN_MAP_SELECT_0(...) (GET_ARG(0, __VA_ARGS__), FN_SELECT_FN_ON_FN_TYPE(GET_ARG(0, __VA_ARGS__), __VA_ARGS__))
+#define _FN_MAP_SELECT_1(...)
+#define FN_MAP_SELECT(...) CONCAT(_FN_MAP_SELECT_, SAME_NUM(0, VAR_COUNT(__VA_ARGS__)))(__VA_ARGS__)
+
+#define FN_TYPESORT(...) BLA(fn), BLA(FN_REDUCE(fn)), BLA(FN_REDUCE(FN_REDUCE()))
+#define GENERATE_GENERIC_2(fns, args) FN_TYPESORT fns
+
+// #define _FN_CREATE_0(name) (_FN_CREATE(STRIP_PARENS(FUNC_TO_TYPES(name))), name)
+// #define _FN_CREATE_1(name) (name)
+// #define FN_CREATE(name) _CONCAT(_FN_CREATE_, IS_EMPTY(STRIP_PARENS(FUNC_TO_TYPES(name))))(name)
+
+void gen_test() { //
+  int bla = 2;
+
+  FN_CREATE_LIST(foo1)
+  // FN_MAP_SELECT(FN_CREATE_LIST(foo1, foo, foo2, foo3, bar1, bar2, bar3, bar4, bar5, bar6, baz, f_no_param))
+  // JOIN_FUNCS((foo, foo1, foo2, foo3, bar1, bar2, bar3, bar4, bar5, bar6, baz, f_no_param), bla, bla);
+  // FN_REMOVE_FN_ON_FN_TYPE(FN_CREATE_LIST(foo2, foo, foo1, foo2, foo, baz, foo2), FN_REDUCE(FN_CREATE(baz)))
+  // FN_LOOSE_SAME_TYPE(FN_CREATE_LIST(foo2, foo, foo1, foo2, foo3), FN_REDUCE(FN_CREATE(bar)))
+  // FN_KEEP_SAME_TYPE(FN_CREATE_LIST(foo1, foo, foo1, foo2, foo3, bar, baz))
+}
+
+#endif /* GENERIC_TABLE_H */

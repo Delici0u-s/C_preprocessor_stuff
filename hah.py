@@ -1,17 +1,20 @@
 import pyperclip
 
+def safe_preview(fallback): return eval("preview_amount") if "preview_amount" in globals() else fallback
+
 # === Configuration ===
+# preview_amount = 10
 start = 0
-end = 100
-name = "_REM1_"
-output_to_clipboard = True   # comment out to print
+end = safe_preview(1002)
+name = "_LF_"
 
 # === Helpers ===
-def get_arg_list(start: int, end: int, joiner: str = ", ", prefix: str = "a"):
-    return joiner.join([f"{prefix}{j}" for j in range(start, end)])
+def get_arg_list(start: int, end: int, prefix: str = "a"):
+    return [f"{prefix}{j}" for j in range(start, end)]
 
 def generate_macro(i: int) -> str:
-  return f"#define {name}{i} {i-1}"
+  arglist = get_arg_list(0, i)
+  return f"#define {name}{i}(s, f, {", ".join(arglist)}) {" s() ".join([f"f({j})" for j in arglist])}"
 
 # === Macro Generation ===
 lines = []
@@ -23,7 +26,7 @@ output = '\n'.join(lines)
 
 # === Output ===
 try:
-  output_to_clipboard
-  pyperclip.copy(output)
-except:
+  preview_amount
   print(output)
+except:
+  pyperclip.copy(output)
