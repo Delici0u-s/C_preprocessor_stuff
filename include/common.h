@@ -3,10 +3,10 @@
 
 // #define NO_WARNING_MODS
 
-#if defined(__clang__) && !defined(NO_WARNING_MODS)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
-#endif
+// #if defined(__clang__) && !defined(NO_WARNING_MODS)
+// #pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
+// #endif
 #if defined(_MSC_VER)
 #error D_MACROS MIGHT NOT WORK
 #endif
@@ -34,8 +34,7 @@
 #define _SWAP_(packet) (SWAP packet)
 
 // Force macro evaluation
-#define _nEVAL(...) __VA_ARGS__
-#define _EVAL(a0) _nEVAL a0
+#define _EVAL(a0) EXPAND a0
 #define EVAL(...) _EVAL((__VA_ARGS__))
 
 #endif
