@@ -59,6 +59,13 @@ CREATE_FUNC_TEST(ID_void, f13)
 #define _types_f14 F_PARAM(P(ID_double, x), P(ID_double, y))
 CREATE_FUNC_TEST(ID_double, f14)
 
-#define TEST_FUNC_LIST f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14
+#define _types_f15 F_PARAM(P(ID_double, x))
+CREATE_FUNC_TEST(ID_double, f15)
+
+#define _types_f16 F_PARAM(P(ID_float, x))
+CREATE_FUNC_TEST(ID_double, f16)
+
+#define TEST_FUNC_LIST_ f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15
+#define TEST_FUNC_LIST f0, TEST_FUNC_LIST_
 
 #endif

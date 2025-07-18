@@ -21,6 +21,7 @@
 #define CALL_BRACE(f, x) f x
 #define VOID(...)
 #define AP_COMMA(...) __VA_ARGS__,
+#define IS_COMMA(...) , __VA_ARGS__
 
 #define _CONCAT_(a, b) a##b
 #define _CONCAT(a, b) _CONCAT_(a, b)
@@ -31,5 +32,10 @@
 #define SWAP(arg1, arg2) arg2, arg1
 #define SWAP_(packet) SWAP packet
 #define _SWAP_(packet) (SWAP packet)
+
+// Force macro evaluation
+#define _nEVAL(...) __VA_ARGS__
+#define _EVAL(a0) _nEVAL a0
+#define EVAL(...) _EVAL((__VA_ARGS__))
 
 #endif
